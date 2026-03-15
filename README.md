@@ -43,21 +43,16 @@ otherwise (Windows), run:
 >
 > - both scripts just copy the entire curdir filetree to the actual
 >   neovim config path
->   - `~/.config/nvim` for unix-like
+>   - `$HOME/.config/nvim` for unix-like
 >   - `%LOCALAPPDATA%/nvim` for Windows
 > - the scripts provides three different kind of flags:
 >   - `--help   | -h`: prints the help panel
->   - `--parent | -p`: build also the `.config` dir if it doesn't
->      exists
 >   - `--force  | -f`: force `.config/nvim` overriding if it already
 >     exists
 > - by forcing the operation, all the old neovim data will be lost
 >   (including `.git` folder)
 >   - a good approach is renaming the old neovim directory to a
 >     backup name (like `mv ~/.config/nvim ~/.config/nvim.bak`)
-> - flags don't work together, so:
->   - use `-f -p` instead of `-fp`
->   - you can also use fullnames like `--force --parent`
 > - all the operation/other flags will be ignored when calling
 >   `--help` or `-h`
 > - I'm not a pro at `sh` and `bat` scripting. Sorry if something
