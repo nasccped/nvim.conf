@@ -1,6 +1,8 @@
 #!/bin/sh
 
 INPUTS=" $@ "
+CONFIG_DIR="$HOME/.config"
+NVIM_DIR="$CONFIG_DIR/nvim"
 HELP_MESSAGE=\
 "neovim config install script
 
@@ -8,8 +10,7 @@ usage: ./install.sh [FLAG(S)]
 
 flags:
 	--help   | -h   Prints the help panel
-	--parent | -p   Enables parent directory creating (when \$XDG_CONFIG dir doesn't exists)
-	--force  | -f   Overrides all neovim data at \`\$XDG_CONFIG/nvim\` directory
+	--force  | -f   Overrides all neovim data at $NVIM_DIR directory
 
 all flags must be separated, like \"--help -p -f\" instead of \"--help -pf\"
 
@@ -22,14 +23,6 @@ HELP_TRIGGER=$(case "$INPUTS" in
 	*)
 		echo false;;
 esac)
-PARENT_FLAG="--parent"
-PARENT_ALIAS="-p"
-PARENT_TRIGGER=$(case "$INPUTS" in
-	*" $PARENT_FLAG "* | *" $PARENT_ALIAS "*)
-		echo true;;
-	*)
-		echo false;;
-esac)
 FORCE_FLAG="--force"
 FORCE_ALIAS="-f"
 FORCE_TRIGGER=$(case "$INPUTS" in
@@ -38,17 +31,13 @@ FORCE_TRIGGER=$(case "$INPUTS" in
 	*)
 		echo false;;
 esac)
-ERR_EMPTY_XDG="\$XDG_CONFIG is empty. Consider defining it at \`/etc/profile\`
-       or running \`XDG_CONFIG=\"config/path\" ./install.sh\`"
-ERR_XDG_DOESNT_EXISTS="\$XDG_CONFIG ($XDG_CONFIG) path doesn't exists.
-       use the \`$PARENT_FLAG\` flag to create all parents directories to it..."
-ERR_NVIM_ALREADY_EXISTS="nvim config directory already exists.
+ERR_NVIM_ALREADY_EXISTS="$NVIM_DIR path directory already exists.
        you can use \`$FORCE_FLAG\` flag to override all data.
 
        WARNING: this will erase all your neovim configuration.
                 consider renaming the original folder and then, running
                 this script"
-
+WARN_CONFIG_DIR_DOESNT_EXISTS="$CONFIG_DIR path doesn't exists. creating one..."
 WARN_NVIM_ALREADY_EXISTS="nvim config directory already exists.
       the current directory will be copied to the nvim config path."
 
@@ -80,29 +69,22 @@ ask() {
 		*) return 1;;
 	esac
 }
-
 # if help called
 if $HELP_TRIGGER; then
 	echo "$HELP_MESSAGE"
 	exit 0
 fi
-
-XDG="$XDG_CONFIG"
-
-# check xdg status
-if [ "$XDG" == "" ]; then
-	error_and_kill "$ERR_EMPTY_XDG"
-elif [ ! -d "$XDG" ] && ! $PARENT_TRIGGER; then
-	error_and_kill "$ERR_XDG_DOESNT_EXISTS"
+# check config dir
+if [ ! -d "$CONFIG_DIR" ]; then
+	warning "$WARN_CONFIG_DIR_DOESNT_EXISTS"
+	mkdir -p "$CONFIG_DIR"
 fi
-
-NVIM="$XDG/nvim"
-
 # checks nvim status
-if [ -d "$NVIM" ]; then
+if [ -d "$NVIM_DIR" ]; then
 	if $FORCE_TRIGGER; then
 		warning "$WARN_NVIM_ALREADY_EXISTS\n"
 		if ask "this will erase all your old data (including .git dir). are you sure?"; then
+			rm -rf "$NVIM_DIR/*"
 			echo
 		else
 			echo -e "\naborting..."
@@ -112,19 +94,14 @@ if [ -d "$NVIM" ]; then
 		error_and_kill "$ERR_NVIM_ALREADY_EXISTS"
 	fi
 else
-	warning "nvim config directory ($NVIM)
-      doesn't exists, creating one..."
-	echo
-	mkdir -p "$NVIM"
+	echo "creating a new $NVIM_DIR path..."
+	mkdir -p "$NVIM_DIR"
 fi
-
 # last alert
 echo -e "copying files from the current dir ($(pwd))
-to neovim config path ($NVIM)\n"
-
+to neovim config path ($NVIM_DIR)\n"
 # running copy
-COMMAND="cp -pr ./* '$NVIM' 2>/dev/null"
-
+COMMAND="$(cp -pr . $NVIM_DIR) 2>/dev/null"
 # checks success
 if eval "$COMMAND"; then
 	echo "done!"
