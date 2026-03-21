@@ -7,6 +7,15 @@ intended to be replaced, improved or updated. You can also send PRs
 and issues to contribute, but don't consider it a real software or
 serious thing...
 
+##  Requirements
+
+Since it's a neovim config source based on
+[Lazy](https://lazy.folke.io/) plugin manager you'll need:
+
+- the `nvim 0.10.x` version at least...
+- the `lazy.nvim` dependencies as well (can be found
+  [here](https://lazy.folke.io/#%EF%B8%8F-requirements))
+
 ## Setting up
 
 Take look at the following steps to setup this config on your
